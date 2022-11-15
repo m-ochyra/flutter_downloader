@@ -1,9 +1,50 @@
+## 1.9.1
+
+- Fix last download progress being wrong on Android (#752)
+- Make HTTP timeout configurable on Android (#741)
+
+## 1.9.0
+
+- Migrate the Android part to Kotlin from Java (#719)
+- iOS: fix wrong progress and status after pausing download (#743)
+- Add missing comma in the README (#744)
+
+## 1.8.4
+
+- Fix `FlutterDownloader.open()` always returning false (#726)
+
+## 1.8.3+2
+
+- Populate `issue_tracker` field in pubspec (#717)
+
+## 1.8.3+1
+
+- Minor updates to README (#715)
+
+## 1.8.3
+
+- Android: revert possibility to set custom notification title introduced in
+  #437. This fixes #705
+
+## 1.8.2
+
+- Fix crashing on Flutter 3.3 (#700)
+- Improve README (#692)
+- Android: make it possible to set custom notification title (#437)
+
 ## 1.8.1
 
-- Add optional `int step` argument to `FlutterDownloader.registerCallback()`
+- Add optional `step` argument to `FlutterDownloader.registerCallback()` (#435)
+- Add `initialized` getter to `FlutterDownloader` (#436)
+- Slightly refactor example app (#678 #680)
+- iOS: fix unable to cancel task after terminating the app while downloading
+  (#658)
+- iOS: fix NSRangeException being thrown when columns in the database don't
+  match (#661)
+- iOS: migrate off deprecated method
+  `stringByReplacingPercentEscapesUsingEncoding` (#652)
+- Android: add SQLite migration from version 2 to 3 (#667)
 - Improve README
-- Slightly refactor example app
-- Android only: add SQLite migration from version 2 to 3
 
 ## 1.8.0+1
 

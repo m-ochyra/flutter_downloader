@@ -9,19 +9,18 @@ environment:
 
 dependencies:
   android_path_provider: ^0.3.0
-  cupertino_icons: ^1.0.5
   device_info: ^2.0.3
   flutter:
     sdk: flutter
   flutter_downloader:
     path: ../
-  path_provider: ^2.0.10
-  permission_handler: ^9.2.0
+  path_provider: ^2.0.11
+  permission_handler: ^10.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  leancode_lint: ^1.2.1
+  leancode_lint: ^2.0.0+1
 
 flutter:
   uses-material-design: true
