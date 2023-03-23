@@ -5,7 +5,7 @@ on:
   push:
     branches: [master]
     # don't run this workflow on version tags
-    tags-ignore: ["v*"]
+    tags-ignore: ['v*']
   pull_request_target:
     branches: [master]
 
@@ -20,7 +20,6 @@ jobs:
         include:
           - version: 3.0.0
           - channel: stable
-          - channel: beta
 
     steps:
       - name: Clone repository
@@ -55,9 +54,9 @@ jobs:
         run: flutter test
 
       # disabled because always fails for strange reasons
-      # - name: ktlint check
-      #   working-directory: example/android
-      #   run: ./gradlew :flutter_downloader:ktlintCheck
+      - name: ktlint check
+        working-directory: example/android
+        run: ./gradlew flutter_downloader:ktlintCheck
 
       - name: flutter pub get (example app)
         working-directory: ./example

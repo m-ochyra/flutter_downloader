@@ -1,3 +1,33 @@
+## 1.10.2
+
+- Correctly read the error/success codes (#766)
+- Fix `allowCellular` error in iOS for `loadTasksWithRawQuery()` (#803)
+- Fix example app crashing (#805)
+- fix: apply tasks progress instead of computed progress on pause (#818)
+- Fix create application support directory if it doesn't already exist (#815)
+- Remove automatic call to `WidgetsFlutterBinding.ensureInitialized()` in
+  `FlutterDownloader.initialize()` (#816)
+- Fix send message by `int` on port (#817)
+
+## 1.10.1+2
+
+- Minor fix to `publish` GitHub Action (#801)
+
+## 1.10.1+1
+
+- Fix generation of link to release notes on GitHub Releases (#799)
+
+## 1.10.1
+
+- Fix crash when `allowCellular` is null on iOS (#774)
+
+## 1.10.0
+
+- Add `allowCellular` argument to `loadTasksWithRawQuery()` (#765)
+- Fix database of download tasks being created in a public directory on iOS
+  (#728)
+- Add `allowCellular` argument to `DownloadCallback` (#754)
+
 ## 1.9.1
 
 - Fix last download progress being wrong on Android (#752)
@@ -58,7 +88,8 @@
 
 - Improve documentation
 
-- Make it possible to disable logging using `FlutterDownloader.initialize(debug: false)`
+- Make it possible to disable logging using `FlutterDownloader.initialize(debug:
+false)`
 
 ## 1.7.4
 
@@ -129,7 +160,8 @@
 
 ## 1.4.1
 
-- Android: fix bug `ensureInitializationComplete must be called after startInitialization`
+- Android: fix bug `ensureInitializationComplete must be called after
+startInitialization`
 - clarify integration documents
 
 ## 1.4.0

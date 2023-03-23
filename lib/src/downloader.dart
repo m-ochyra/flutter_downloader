@@ -4,17 +4,16 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_downloader/src/exceptions.dart';
 
 import 'callback_dispatcher.dart';
 import 'models.dart';
 
-/// Singature for a function which is called when the download state of a task
+/// Signature for a function which is called when the download state of a task
 /// with [id] changes.
 typedef DownloadCallback = void Function(
   String id,
-  DownloadTaskStatus status,
+  int status,
   int progress,
 );
 
@@ -50,8 +49,6 @@ class FlutterDownloader {
     );
 
     _debug = debug;
-
-    WidgetsFlutterBinding.ensureInitialized();
 
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher)!;
     await _channel.invokeMethod<void>('initialize', <dynamic>[
@@ -101,6 +98,7 @@ class FlutterDownloader {
     bool openFileFromNotification = true,
     bool requiresStorageNotLow = true,
     bool saveInPublicStorage = false,
+    bool allowCellular = true,
     int timeout = 15000,
   }) async {
     assert(_initialized, 'plugin flutter_downloader is not initialized');
@@ -117,6 +115,7 @@ class FlutterDownloader {
         'requires_storage_not_low': requiresStorageNotLow,
         'save_in_public_storage': saveInPublicStorage,
         'timeout': timeout,
+        'allow_cellular': allowCellular,
       });
 
       if (taskId == null) {
@@ -160,6 +159,9 @@ class FlutterDownloader {
             filename: item['file_name'] as String?,
             savedDir: item['saved_dir'] as String,
             timeCreated: item['time_created'] as int,
+
+            // allowCellular field is true by default (similar to enqueue())
+            allowCellular: (item['allow_cellular'] as bool?) ?? true,
           );
         },
       ).toList();
@@ -217,6 +219,9 @@ class FlutterDownloader {
             filename: item['file_name'] as String?,
             savedDir: item['saved_dir'] as String,
             timeCreated: item['time_created'] as int,
+
+            // allowCellular field is true by default (similar to enqueue())
+            allowCellular: (item['allow_cellular'] as bool?) ?? true,
           );
         },
       ).toList();
@@ -390,7 +395,7 @@ class FlutterDownloader {
   ///  IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
   ///  _port.listen((dynamic data) {
   ///     String id = data[0];
-  ///     DownloadTaskStatus status = data[1];
+  ///     DownloadTaskStatus status = DownloadTaskStatus(data[1]);
   ///     int progress = data[2];
   ///     setState((){ });
   ///  });
@@ -400,7 +405,7 @@ class FlutterDownloader {
   ///
   ///static void downloadCallback(
   ///  String id,
-  ///  DownloadTaskStatus status,
+  ///  int status,
   ///  int progress,
   ///  ) {
   ///    final SendPort send = IsolateNameServer.lookupPortByName(

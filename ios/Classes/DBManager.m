@@ -10,12 +10,12 @@
 
 @interface DBManager()
 
-@property (nonatomic, strong) NSString *documentsDirectory;
+@property (nonatomic, strong) NSString *appDirectory;
 @property (nonatomic, strong) NSString *databaseFilePath;
 @property (nonatomic, strong) NSString *databaseFilename;
 @property (nonatomic, strong) NSMutableArray *arrResults;
 
--(void)copyDatabaseIntoDocumentsDirectory;
+-(void)copyDatabaseIntoAppDirectory;
 -(void)runQuery:(const char *)query isQueryExecutable:(BOOL)queryExecutable;
 
 @end
@@ -27,9 +27,20 @@
 -(instancetype)initWithDatabaseFilePath:(NSString *)dbFilePath{
     self = [super init];
     if (self) {
-        // Set the documents directory path to the documentsDirectory property.
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        self.documentsDirectory = [paths objectAtIndex:0];
+        // Get application support directory.
+        // Create the directory if it does not already exist.
+        NSError *error;
+        NSURL *appDirectoryUrl = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory
+                                                                        inDomain:NSUserDomainMask
+                                                               appropriateForURL:nil
+                                                                          create:YES
+                                                                           error:&error];
+        self.appDirectory = appDirectoryUrl.path;
+        if (debug) {
+            if (error) {
+                NSLog(@"Get application support directory error: %@", error);
+            }
+        }
 
         // Keep the database filepath
         self.databaseFilePath = dbFilePath;
@@ -37,20 +48,29 @@
         // Keep the database filename.
         self.databaseFilename = [dbFilePath lastPathComponent];
 
-        // Copy the database file into the documents directory if necessary.
-        [self copyDatabaseIntoDocumentsDirectory];
+        // Copy the database file into the app directory if necessary.
+        [self copyDatabaseIntoAppDirectory];
     }
     return self;
 }
 
--(void)copyDatabaseIntoDocumentsDirectory{
-    // Check if the database file exists in the documents directory.
-    NSString *destinationPath = [self.documentsDirectory stringByAppendingPathComponent:self.databaseFilename];
+// Will be removed in the next major version.
+-(void)copyDatabaseIntoAppDirectory{
+    // Check if the database file exists in the app directory.
+    NSString *destinationPath = [self.appDirectory stringByAppendingPathComponent:self.databaseFilename];
     if (![[NSFileManager defaultManager] fileExistsAtPath:destinationPath]) {
-        // The database file does not exist in the documents directory, so copy it from the main bundle now.
-        NSString *sourcePath = self.databaseFilePath;
+
+        // Attemp database file migration from the documents directory if exists
+        NSString *documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        NSString *migrationSourcePath = [documentsDirectory stringByAppendingPathComponent:self.databaseFilename];
         NSError *error;
-        [[NSFileManager defaultManager] copyItemAtPath:sourcePath toPath:destinationPath error:&error];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:migrationSourcePath]) {
+            // Migrate the database file from the documents directory to the app directory
+            [[NSFileManager defaultManager] moveItemAtPath:migrationSourcePath toPath:destinationPath error:&error];    
+        } else {
+            // The database file does not exist in the app directory, so copy it from the main bundle now.
+            [[NSFileManager defaultManager] copyItemAtPath:self.databaseFilePath toPath:destinationPath error:&error];
+        }
         
         // Check if any error occurred during copying and display it.
         if (debug) {
@@ -72,7 +92,7 @@
     sqlite3 *sqlite3Database;
     
     // Set the database file path.
-    NSString *databasePath = [self.documentsDirectory stringByAppendingPathComponent:self.databaseFilename];
+    NSString *databasePath = [self.appDirectory stringByAppendingPathComponent:self.databaseFilename];
     
     // Initialize the results array.
     if (self.arrResults != nil) {
@@ -90,7 +110,13 @@
     
     
     // Open the database.
-    BOOL openDatabaseResult = sqlite3_open([databasePath UTF8String], &sqlite3Database);
+    int openDatabaseResult = sqlite3_open([databasePath UTF8String], &sqlite3Database);
+    if(openDatabaseResult != SQLITE_OK) {
+        if(debug) {
+            NSLog(@"error opening the database with error no.: %d", openDatabaseResult);
+        }
+        return;
+    }
     if(openDatabaseResult == SQLITE_OK) {
         if (debug) {
             NSLog(@"open DB successfully");
@@ -100,7 +126,7 @@
         sqlite3_stmt *compiledStatement;
 
         // Load all data from database to memory.
-        BOOL prepareStatementResult = sqlite3_prepare_v2(sqlite3Database, query, -1, &compiledStatement, NULL);
+        int prepareStatementResult = sqlite3_prepare_v2(sqlite3Database, query, -1, &compiledStatement, NULL);
         if(prepareStatementResult == SQLITE_OK) {
             // Check if the query is non-executable.
             if (!queryExecutable){
